@@ -1,6 +1,11 @@
 [package]
-name = "rust-beginer"
+name = "rsh"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
-[dependencies]
+[[bin]]
+name = "rsh"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 2
