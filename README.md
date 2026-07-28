@@ -24,15 +24,15 @@ cargo test
 
 Current builtins implemented in `src/builtins.rs`:
 
-- `help` — print help and list builtin names
-- `exit` — exit the shell
-- `pwd` — print current working directory
-- `cd` — currently prints current directory (placeholder behavior)
-- `history` — print command history with line numbers
-- `echo [args...]` — print arguments joined by spaces
-- `alias` — list aliases, set aliases (`name=value`), or show one alias
-- `list [path]` — list directory entries (defaults to current directory)
-- `clear` — clear terminal screen
+- `help` : print help and list builtin names
+- `exit` : exit the shell
+- `pwd` : print current working directory
+- `cd` : currently prints current directory (placeholder behavior)
+- `history` : print command history with line numbers
+- `echo [args...]` : print arguments joined by spaces
+- `alias` : list aliases, set aliases (`name=value`), or show one alias
+- `list [path]` : list directory entries (defaults to current directory)
+- `clear` : clear terminal screen
 
 > Note: alias expansion during command execution (e.g. `ll` resolving to `list`) is not implemented yet.
 
