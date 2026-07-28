@@ -12,7 +12,7 @@ cargo test
 
 ## Features
 
-- Interactive REPL prompt (`>`) with command history stored in shell state
+- Interactive REPL prompt (`>`) with ANSI colors and command history in shell state
 - Builtin-command dispatch through a name → function map
 - Runs external programs with `std::process::Command`
 - Argument parsing with support for:
@@ -24,14 +24,14 @@ cargo test
 
 Current builtins implemented in `src/builtins.rs`:
 
-- `help` : print help and list builtin names
+- `help` : print colorized help and list builtin names
 - `exit` : exit the shell
 - `pwd` : print current working directory
 - `cd [path]` : change current working directory (`cd` / `cd ~` uses home)
 - `history` : print command history with line numbers
 - `echo [args...]` : print arguments joined by spaces
 - `alias` : list aliases, set aliases (`name=value`), or show one alias
-- `list [path]` : list directory entries (defaults to current directory)
+- `list [path]` : list directory entries (defaults to current directory, directories in blue)
 - `clear` : clear terminal screen
 
 > Alias expansion is supported for command dispatch (e.g. `alias ll=list`, then `ll`).

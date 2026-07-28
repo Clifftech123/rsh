@@ -4,6 +4,13 @@ use std::fs;
 use std::io::{self, Write};
 use std::path::PathBuf;
 
+pub const RESET: &str = "\x1B[0m";
+pub const RED: &str = "\x1B[31m";
+pub const GREEN: &str = "\x1B[32m";
+pub const YELLOW: &str = "\x1B[33m";
+pub const BLUE: &str = "\x1B[34m";
+pub const CYAN: &str = "\x1B[36m";
+
 /// Tells the shell loop what to do after a builtin command runs.
 pub enum ControlFlow {
     Continue,
@@ -49,7 +56,7 @@ pub fn register() -> HashMap<&'static str, BuiltinFn> {
 // Changes the current directory.
 fn builtin_cd(args: &[String], _state: &mut ShellState) -> ControlFlow {
     if args.len() > 2 {
-        eprintln!("rsh: cd: too many arguments");
+        eprintln!("{RED}rsh:{RESET} cd: too many arguments");
         return ControlFlow::Continue;
     }
 
@@ -57,7 +64,7 @@ fn builtin_cd(args: &[String], _state: &mut ShellState) -> ControlFlow {
         match env::var_os("HOME").or_else(|| env::var_os("USERPROFILE")) {
             Some(home) => PathBuf::from(home),
             None => {
-                eprintln!("rsh: cd: HOME not set");
+                eprintln!("{RED}rsh:{RESET} cd: HOME not set");
                 return ControlFlow::Continue;
             }
         }
@@ -66,7 +73,7 @@ fn builtin_cd(args: &[String], _state: &mut ShellState) -> ControlFlow {
     };
 
     if let Err(e) = env::set_current_dir(&target) {
-        eprintln!("rsh: cd: {}: {}", target.display(), e);
+        eprintln!("{RED}rsh:{RESET} cd: {}: {}", target.display(), e);
     }
 
     ControlFlow::Continue
@@ -74,11 +81,11 @@ fn builtin_cd(args: &[String], _state: &mut ShellState) -> ControlFlow {
 
 // Prints basic help information and lists available builtin commands.
 fn builtin_help(_args: &[String], state: &mut ShellState) -> ControlFlow {
-    println!("rsh: a small shell written in Rust");
+    println!("{YELLOW}rsh:{RESET} a small shell written in Rust");
     println!("Type program names and arguments, and hit enter.");
-    println!("The following are built in:");
+    println!("{YELLOW}The following are built in:{RESET}");
     for name in register().keys() {
-        println!("  {}", name);
+        println!("  {GREEN}{}{RESET}", name);
     }
     println!("Use the man command for information on other programs.");
     let _ = state; // not needed here, but shows the signature is uniform
@@ -94,7 +101,7 @@ fn builtin_exit(_args: &[String], _state: &mut ShellState) -> ControlFlow {
 fn builtin_pwd(_args: &[String], _state: &mut ShellState) -> ControlFlow {
     match env::current_dir() {
         Ok(path) => println!("{}", path.display()),
-        Err(e) => eprintln!("rsh: {}", e),
+        Err(e) => eprintln!("{RED}rsh:{RESET} {}", e),
     }
     ControlFlow::Continue
 }
@@ -122,7 +129,7 @@ fn builtin_alias(args: &[String], state: &mut ShellState) -> ControlFlow {
         } else {
             match state.aliases.get(arg) {
                 Some(value) => println!("alias {}='{}'", arg, value),
-                None => eprintln!("rsh: alias: {} not found", arg),
+                None => eprintln!("{RED}rsh:{RESET} alias: {} not found", arg),
             }
         }
     }
@@ -143,22 +150,30 @@ fn builtin_list(args: &[String], _state: &mut ShellState) -> ControlFlow {
     let read_dir = match fs::read_dir(target) {
         Ok(iter) => iter,
         Err(e) => {
-            eprintln!("rsh: list: {}: {}", target, e);
+            eprintln!("{RED}rsh:{RESET} list: {}: {}", target, e);
             return ControlFlow::Continue;
         }
     };
 
-    let mut entries: Vec<String> = Vec::new();
+    let mut entries: Vec<(String, bool)> = Vec::new();
     for entry in read_dir {
         match entry {
-            Ok(item) => entries.push(item.file_name().to_string_lossy().into_owned()),
-            Err(e) => eprintln!("rsh: list: {}", e),
+            Ok(item) => {
+                let name = item.file_name().to_string_lossy().into_owned();
+                let is_dir = item.path().is_dir();
+                entries.push((name, is_dir));
+            }
+            Err(e) => eprintln!("{RED}rsh:{RESET} list: {}", e),
         }
     }
 
-    entries.sort();
-    for name in entries {
-        println!("{}", name);
+    entries.sort_by(|a, b| a.0.cmp(&b.0));
+    for (name, is_dir) in entries {
+        if is_dir {
+            println!("{BLUE}{}{RESET}", name);
+        } else {
+            println!("{}", name);
+        }
     }
 
     ControlFlow::Continue

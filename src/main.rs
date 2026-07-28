@@ -1,7 +1,7 @@
 mod builtins;
 mod parser;
 
-use builtins::{ControlFlow, ShellState};
+use builtins::{ControlFlow, ShellState, CYAN, RED, RESET};
 use std::collections::{HashMap, HashSet};
 use std::io::{self, Write};
 use std::process::Command;
@@ -11,7 +11,7 @@ fn main() {
     let mut state = ShellState::new();
 
     loop {
-        print!("> ");
+        print!("{CYAN}> {RESET}");
         // Make sure the prompt actually appears before we block on input.
         io::stdout().flush().ok();
 
@@ -29,7 +29,7 @@ fn main() {
         let args = match parser::split_line(trimmed) {
             Ok(args) => args,
             Err(e) => {
-                eprintln!("rsh: {}", e);
+                eprintln!("{RED}rsh:{RESET} {}", e);
                 continue;
             }
         };
@@ -49,7 +49,7 @@ fn read_line() -> Option<String> {
         Ok(0) => None,      // 0 bytes read = EOF
         Ok(_) => Some(buf), // buf still has the trailing '\n'; we trim it above
         Err(e) => {
-            eprintln!("rsh: error reading input: {}", e);
+            eprintln!("{RED}rsh:{RESET} error reading input: {}", e);
             None
         }
     }
@@ -63,7 +63,7 @@ fn execute(
     let expanded_args = match expand_aliases(args, state) {
         Ok(expanded) => expanded,
         Err(e) => {
-            eprintln!("rsh: {}", e);
+            eprintln!("{RED}rsh:{RESET} {}", e);
             return ControlFlow::Continue;
         }
     };
@@ -125,7 +125,7 @@ fn launch(args: &[String]) -> ControlFlow {
     match Command::new(program).args(rest).status() {
         Ok(_status) => {}
         Err(e) => {
-            eprintln!("rsh: {}: {}", program, e);
+            eprintln!("{RED}rsh:{RESET} {}: {}", program, e);
         }
     }
 
