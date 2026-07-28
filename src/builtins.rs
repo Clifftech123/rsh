@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::env;
+use std::fs;
 
 /// Tells the shell loop what to do after a builtin command runs.
 pub enum ControlFlow {
@@ -37,6 +38,8 @@ pub fn register() -> HashMap<&'static str, BuiltinFn> {
     map.insert("history", builtin_history);
     map.insert("alias", builtin_alias);
     map.insert("echo", builtin_echo);
+    map.insert("list", builtin_list);
+
     map
 }
 
@@ -111,5 +114,33 @@ fn builtin_alias(args: &[String], state: &mut ShellState) -> ControlFlow {
 // Prints all arguments after `echo`, separated by spaces.
 fn builtin_echo(args: &[String], _state: &mut ShellState) -> ControlFlow {
     println!("{}", args[1..].join(" "));
+    ControlFlow::Continue
+}
+
+// Lists files and folders in the target directory (or current directory).
+fn builtin_list(args: &[String], _state: &mut ShellState) -> ControlFlow {
+    let target = args.get(1).map(String::as_str).unwrap_or(".");
+
+    let read_dir = match fs::read_dir(target) {
+        Ok(iter) => iter,
+        Err(e) => {
+            eprintln!("rsh: list: {}: {}", target, e);
+            return ControlFlow::Continue;
+        }
+    };
+
+    let mut entries: Vec<String> = Vec::new();
+    for entry in read_dir {
+        match entry {
+            Ok(item) => entries.push(item.file_name().to_string_lossy().into_owned()),
+            Err(e) => eprintln!("rsh: list: {}", e),
+        }
+    }
+
+    entries.sort();
+    for name in entries {
+        println!("{}", name);
+    }
+
     ControlFlow::Continue
 }
