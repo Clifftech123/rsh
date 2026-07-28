@@ -1,18 +1,3 @@
-//! Turns a raw line of input into a vector of argument strings.
-//!
-//! In the C tutorial this was `lsh_split_line()`, built on `strtok()`.
-//! `strtok()` only splits on whitespace, so `echo "hi there"` becomes
-//! three separate tokens: `echo`, `"hi`, `there"` — quotes are never
-//! actually consumed as quotes, just treated as ordinary characters.
-//!
-//! Here we do a proper small tokenizer: it understands single quotes,
-//! double quotes, and a backslash escape, so `echo "hi there"` produces
-//! two arguments: `echo` and `hi there`. This is the same idea `strtok`
-//! was trying to approximate, done correctly.
-
-// Split a line of shell input into argument tokens.
-
-// Returns `Err(String)` if the line has an unterminated quote, e.g. `echo "oops`.
 
 pub fn split_line(line: &str) -> Result<Vec<String>, String> {
     let mut tokens = Vec::new();

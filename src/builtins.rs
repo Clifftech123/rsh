@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::env;
 use std::fs;
+use std::io::{self, Write};
 
 /// Tells the shell loop what to do after a builtin command runs.
 pub enum ControlFlow {
@@ -39,6 +40,7 @@ pub fn register() -> HashMap<&'static str, BuiltinFn> {
     map.insert("alias", builtin_alias);
     map.insert("echo", builtin_echo);
     map.insert("list", builtin_list);
+    map.insert("clear", builtin_clear);
 
     map
 }
@@ -142,5 +144,12 @@ fn builtin_list(args: &[String], _state: &mut ShellState) -> ControlFlow {
         println!("{}", name);
     }
 
+    ControlFlow::Continue
+}
+
+// Clears the terminal screen and moves cursor to top-left.
+fn builtin_clear(_args: &[String], _state: &mut ShellState) -> ControlFlow {
+    print!("\x1B[2J\x1B[H");
+    let _ = io::stdout().flush();
     ControlFlow::Continue
 }
