@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::io::{self, Write};
+use std::path::PathBuf;
 
 /// Tells the shell loop what to do after a builtin command runs.
 pub enum ControlFlow {
@@ -45,11 +46,27 @@ pub fn register() -> HashMap<&'static str, BuiltinFn> {
     map
 }
 
-// Prints the current directory.
-fn builtin_cd(_args: &[String], _state: &mut ShellState) -> ControlFlow {
-    match env::current_dir() {
-        Ok(path) => println!("{}", path.display()),
-        Err(e) => print!("rsh : {}", e),
+// Changes the current directory.
+fn builtin_cd(args: &[String], _state: &mut ShellState) -> ControlFlow {
+    if args.len() > 2 {
+        eprintln!("rsh: cd: too many arguments");
+        return ControlFlow::Continue;
+    }
+
+    let target: PathBuf = if args.len() == 1 || args[1] == "~" {
+        match env::var_os("HOME").or_else(|| env::var_os("USERPROFILE")) {
+            Some(home) => PathBuf::from(home),
+            None => {
+                eprintln!("rsh: cd: HOME not set");
+                return ControlFlow::Continue;
+            }
+        }
+    } else {
+        PathBuf::from(&args[1])
+    };
+
+    if let Err(e) = env::set_current_dir(&target) {
+        eprintln!("rsh: cd: {}: {}", target.display(), e);
     }
 
     ControlFlow::Continue

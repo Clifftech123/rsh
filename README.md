@@ -27,14 +27,15 @@ Current builtins implemented in `src/builtins.rs`:
 - `help` : print help and list builtin names
 - `exit` : exit the shell
 - `pwd` : print current working directory
-- `cd` : currently prints current directory (placeholder behavior)
+- `cd [path]` : change current working directory (`cd` / `cd ~` uses home)
 - `history` : print command history with line numbers
 - `echo [args...]` : print arguments joined by spaces
 - `alias` : list aliases, set aliases (`name=value`), or show one alias
 - `list [path]` : list directory entries (defaults to current directory)
 - `clear` : clear terminal screen
 
-> Note: alias expansion during command execution (e.g. `ll` resolving to `list`) is not implemented yet.
+> Alias expansion is supported for command dispatch (e.g. `alias ll=list`, then `ll`).
+
 
 ## Quick demo
 
@@ -94,4 +95,4 @@ cargo run
 2. I/O redirection (`>`, `<`) in launch/execution path
 3. Pipelines (`cmd1 | cmd2`)
 4. Globbing (`*.rs`) before command execution
-5. Alias expansion in command dispatch
+5. Persistent aliases/history across sessions
