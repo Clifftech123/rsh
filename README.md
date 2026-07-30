@@ -15,6 +15,7 @@ cargo test
 - Interactive REPL prompt (`>`) with ANSI colors and command history in shell state
 - Builtin-command dispatch through a name → function map
 - Runs external programs with `std::process::Command`
+- Basic pipelines with quote-aware parsing (`cmd1 | cmd2`)
 - Argument parsing with support for:
   - quoted strings (`"hi there"`)
   - escaped characters (`\ `, `\"`, etc.)
@@ -35,6 +36,7 @@ Current builtins implemented in `src/builtins.rs`:
 - `clear` : clear terminal screen
 
 > Alias expansion is supported for command dispatch (e.g. `alias ll=list`, then `ll`).
+> Pipeline stages also expand aliases, but builtins are currently rejected inside pipelines.
 
 
 ## Quick demo
@@ -53,6 +55,15 @@ exit
 ```
 
 
+
+## Project layout
+
+- `src/main.rs` : top-level shell loop and command routing
+- `src/repl.rs` : prompt rendering and input reading
+- `src/executor.rs` : command execution, alias expansion, pipeline stage preparation
+- `src/pipeline.rs` : pipeline parsing and process piping
+- `src/parser.rs` : tokenization with quotes/escapes
+- `src/builtins.rs` : builtin implementations and shell state
 
 ## Adding a new builtin
 
@@ -93,6 +104,6 @@ cargo run
 
 1. Environment variable expansion (`$NAME`) in `parser::split_line`
 2. I/O redirection (`>`, `<`) in launch/execution path
-3. Pipelines (`cmd1 | cmd2`)
+3. Builtin support inside pipelines (where practical)
 4. Globbing (`*.rs`) before command execution
 5. Persistent aliases/history across sessions
